@@ -31,13 +31,15 @@ Bear in mind, handling bad inputs from clients doesn't necessarily have to lead 
 
 ### GET `/not-a-route`
 
-- Status: ???
+- Status: 404
 
 ---
 
 ## Available Routes
 
 ### GET `/api/topics`
+
+- Status: 200
 
 -
 
