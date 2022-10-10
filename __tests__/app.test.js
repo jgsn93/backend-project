@@ -11,7 +11,7 @@ afterAll(() => {
 });
 
 describe("GET /api/topics", () => {
-  test("200: returns an array with correctly foramtted objects", () => {
+  test("200: returns an object with an array with correctly formatted objects", () => {
     return request(app)
       .get("/api/topics")
       .expect(200)
@@ -26,6 +26,28 @@ describe("GET /api/topics", () => {
               slug: expect.any(String),
             })
           );
+        });
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id", () => {
+  test("200: return an article object with the correct properties", () => {
+    const article_id = 1;
+
+    return request(app)
+      .get(`/api/articles/${article_id}`)
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toEqual({
+          author: expect.any(String),
+          title: expect.any(String),
+          article_id: article_id,
+          body: expect.any(String),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
         });
       });
   });
