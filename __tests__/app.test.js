@@ -51,9 +51,25 @@ describe("GET /api/articles/:article_id", () => {
         });
       });
   });
+  test("404: returns an error if ID does not exist but correct input type", () => {
+    return request(app)
+      .get(`/api/articles/9000`)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid article ID");
+      });
+  });
+  test("400: returns an error if not a valid input type", () => {
+    return request(app)
+      .get(`/api/articles/durian`)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
 });
 
-describe("404", () => {
+describe("404 for invalid end points", () => {
   test("404: returns status 404 and error message for an invalid end point", () => {
     return request(app)
       .get("/api/nothing")
