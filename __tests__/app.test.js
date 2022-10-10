@@ -15,7 +15,8 @@ describe("GET /api/topics", () => {
     return request(app)
       .get("/api/topics")
       .expect(200)
-      .then(({ body: topics }) => {
+      .then(({ body }) => {
+        const { topics } = body;
         expect(topics).toBeInstanceOf(Array);
         expect(topics).toHaveLength(3);
         topics.forEach((topic) => {
