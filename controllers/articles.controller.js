@@ -19,7 +19,7 @@ exports.patchArticleById = (req, res, next) => {
   const { article_id } = req.params;
 
   if (!inc_votes) {
-    res.status(404).send({ status: 404, message: "Invalid patch request" });
+    res.status(400).send({ status: 400, message: "Invalid input" });
   }
 
   updateArticleById(inc_votes, article_id)

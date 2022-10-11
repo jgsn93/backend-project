@@ -132,15 +132,26 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.message).toBe("Article not found");
       });
   });
-  test("404: returns an error if the patch request itself is not valid", () => {
+  test("400: returns an error if the patch request has an invalid key", () => {
     const patchedObj = { please_break: 100 };
 
     return request(app)
       .patch("/api/articles/1")
       .send(patchedObj)
-      .expect(404)
+      .expect(400)
       .then(({ body }) => {
-        expect(body.message).toBe("Invalid patch request");
+        expect(body.message).toBe("Invalid input");
+      });
+  });
+  test("400: returns an error if the patch request has an invalid value data type", () => {
+    const patchedObj = { inc_votes: "break" };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
       });
   });
 });
