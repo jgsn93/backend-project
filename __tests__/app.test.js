@@ -132,6 +132,17 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.message).toBe("Article not found");
       });
   });
+  test("404: returns an error if the patch request itself is not valid", () => {
+    const patchedObj = { please_break: 100 };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchedObj)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid patch request");
+      });
+  });
 });
 
 describe("404 for invalid end points", () => {
