@@ -54,7 +54,7 @@ describe("GET /api/articles/:article_id", () => {
       .get(`/api/articles/9000`)
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("Invalid article ID");
+        expect(body.message).toBe("Article not found");
       });
   });
   test("400: returns an error if not a valid input type", () => {
@@ -63,6 +63,28 @@ describe("GET /api/articles/:article_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("Invalid input");
+      });
+  });
+});
+
+describe.only("GET /api/users", () => {
+  test("200: returns an object with an array with correctly formatted objects", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(users).toBeInstanceOf(Array);
+        expect(users).toHaveLength(4);
+        users.forEach((user) => {
+          expect(user).toEqual(
+            expect.objectContaining({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            })
+          );
+        });
       });
   });
 });

@@ -63,6 +63,8 @@ Bear in mind, handling bad inputs from clients doesn't necessarily have to lead 
 
 ### GET `/api/articles/:article_id/comments`
 
+- Statuses: 200, 400 and 404
+
 -
 
 ### GET `/api/articles`
