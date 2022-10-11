@@ -31,27 +31,36 @@ describe("GET /api/topics", () => {
   });
 });
 
+// describe("GET /api/articles", () => {
+//   test("200: returns an object with an array with correctly formatted objects", () => {
+//     return request(app)
+//       .get("/api/articles")
+//       .expect(200)
+//       .then(({ body }) => {
+//         const { articles } = body;
+//         expect(articles).toBeInstanceOf(Array);
+//         expect(articles).toHaveLength(12);
+//         articles.forEach((article) => {
+//           expect(article).toEqual(
+//             expect.objectContaining({
+//               author: expect.any(String),
+//               title: expect.any(String),
+//               article_id: expect.any(Number),
+//               topic: expect.any(String),
+//               created_at: expect.any(String),
+//               vote: expect.any(Number),
+//               comment_count: expect.any(Number),
+//             })
+//           );
+//         });
+//       });
+//   });
+// });
+
 describe("GET /api/articles/:article_id", () => {
   test("200: return an article object with the correct properties", () => {
     return request(app)
       .get(`/api/articles/1`)
-      .expect(200)
-      .then(({ body }) => {
-        const { article } = body;
-        expect(article).toEqual({
-          author: "butter_bridge",
-          title: "Living in the shadow of a great man",
-          article_id: 1,
-          body: "I find this existence challenging",
-          topic: "mitch",
-          created_at: "2020-07-09T20:11:00.000Z",
-          votes: 100,
-        });
-      });
-  });
-  test("200: accepts a query of comment_count returning an article object but with added comment_count key", () => {
-    return request(app)
-      .get(`/api/articles/1?comment_count=true`)
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
@@ -73,6 +82,7 @@ describe("GET /api/articles/:article_id", () => {
       .get(`/api/articles/9000`)
       .expect(404)
       .then(({ body }) => {
+        console.log(body);
         expect(body.message).toBe("Article not found");
       });
   });
@@ -129,6 +139,17 @@ describe("PATCH /api/articles/:article_id", () => {
         });
       });
   });
+  test("400: returns an err if the patch request does not have an inc_votes key", () => {
+    const patchedObj = { do_not_want: 100 };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
   test("400: returns an error if the patch request has an invalid id type ", () => {
     const patchedObj = { inc_votes: 50 };
 
@@ -151,17 +172,6 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.message).toBe("Article not found");
       });
   });
-  // test("400: returns an error if the patch request has an invalid key", () => {
-  //   const patchedObj = { please_break: 100 };
-
-  //   return request(app)
-  //     .patch("/api/articles/1")
-  //     .send(patchedObj)
-  //     .expect(400)
-  //     .then(({ body }) => {
-  //       expect(body.message).toBe("Invalid input");
-  //     });
-  // });
   test("400: returns an error if the patch request has an invalid value data type", () => {
     const patchedObj = { inc_votes: "break" };
 

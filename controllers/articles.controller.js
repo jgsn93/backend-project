@@ -5,9 +5,8 @@ const {
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
-  const { comment_count } = req.query;
 
-  fetchArticlesById(article_id, comment_count)
+  fetchArticlesById(article_id)
     .then((article) => {
       res.status(200).send({ article });
     })
