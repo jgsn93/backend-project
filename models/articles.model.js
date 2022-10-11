@@ -1,5 +1,20 @@
 const db = require("../db/connection");
 
+exports.fetchArticles = () => {
+  return db
+    .query(
+      `SELECT articles.*, CAST (COUNT(comment_id) AS INT) AS comment_count 
+      FROM articles 
+      JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY article_id ASC;`
+    )
+    .then((data) => {
+      data.rows.forEach((index) => {
+        delete index.body; //Ticket send to remove this?
+      });
+      return data.rows;
+    });
+};
+
 exports.fetchArticlesById = (article_id) => {
   return db
     .query(
