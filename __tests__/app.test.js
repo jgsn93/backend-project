@@ -54,7 +54,7 @@ describe("GET /api/articles/:article_id", () => {
       .get(`/api/articles/9000`)
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("Invalid article ID");
+        expect(body.message).toBe("Article not found");
       });
   });
   test("400: returns an error if not a valid input type", () => {

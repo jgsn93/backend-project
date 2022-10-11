@@ -9,7 +9,7 @@ app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleById);
 
 //404 for end points not found
-app.use((req, res, next) => {
+app.all("*", (req, res) => {
   res.status(404).send({ message: "Invalid end point" });
 });
 
