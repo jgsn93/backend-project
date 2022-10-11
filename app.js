@@ -2,11 +2,13 @@ const express = require("express");
 const app = express();
 const { getTopics } = require("./controllers/topics.controller");
 const { getArticleById } = require("./controllers/articles.controller");
+const { getUsers } = require("./controllers/users.controller");
 
 app.use(express.json());
 
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleById);
+app.get("/api/users", getUsers);
 
 //404 for end points not found
 app.all("*", (req, res) => {
