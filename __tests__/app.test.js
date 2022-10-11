@@ -31,6 +31,32 @@ describe("GET /api/topics", () => {
   });
 });
 
+// describe("GET /api/articles", () => {
+//   test("200: returns an object with an array with correctly formatted objects", () => {
+//     return request(app)
+//       .get("/api/articles")
+//       .expect(200)
+//       .then(({ body }) => {
+//         const { articles } = body;
+//         expect(articles).toBeInstanceOf(Array);
+//         expect(articles).toHaveLength(12);
+//         articles.forEach((article) => {
+//           expect(article).toEqual(
+//             expect.objectContaining({
+//               author: expect.any(String),
+//               title: expect.any(String),
+//               article_id: expect.any(Number),
+//               topic: expect.any(String),
+//               created_at: expect.any(String),
+//               vote: expect.any(Number),
+//               comment_count: expect.any(Number),
+//             })
+//           );
+//         });
+//       });
+//   });
+// });
+
 describe("GET /api/articles/:article_id", () => {
   test("200: return an article object with the correct properties", () => {
     return request(app)
@@ -46,14 +72,17 @@ describe("GET /api/articles/:article_id", () => {
           topic: "mitch",
           created_at: "2020-07-09T20:11:00.000Z",
           votes: 100,
+          comment_count: 11,
         });
       });
   });
+
   test("404: returns an error if ID does not exist but correct input type", () => {
     return request(app)
       .get(`/api/articles/9000`)
       .expect(404)
       .then(({ body }) => {
+        console.log(body);
         expect(body.message).toBe("Article not found");
       });
   });
@@ -67,7 +96,7 @@ describe("GET /api/articles/:article_id", () => {
   });
 });
 
-describe.only("GET /api/users", () => {
+describe("GET /api/users", () => {
   test("200: returns an object with an array with correctly formatted objects", () => {
     return request(app)
       .get("/api/users")
@@ -85,6 +114,73 @@ describe.only("GET /api/users", () => {
             })
           );
         });
+      });
+  });
+});
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: accepts a valid object to patch and responds with the updated article ", () => {
+    const patchedObj = { inc_votes: 50 };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchedObj)
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 150,
+        });
+      });
+  });
+  test("400: returns an err if the patch request does not have an inc_votes key", () => {
+    const patchedObj = { do_not_want: 100 };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
+  test("400: returns an error if the patch request has an invalid id type ", () => {
+    const patchedObj = { inc_votes: 50 };
+
+    return request(app)
+      .patch("/api/articles/durianlove")
+      .send(patchedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
+  test("404: returns an error if ID does not exist but correct input type", () => {
+    const patchedObj = { inc_votes: 50 };
+
+    return request(app)
+      .patch("/api/articles/9876")
+      .send(patchedObj)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("Article not found");
+      });
+  });
+  test("400: returns an error if the patch request has an invalid value data type", () => {
+    const patchedObj = { inc_votes: "break" };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
       });
   });
 });

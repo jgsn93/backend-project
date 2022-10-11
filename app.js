@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
 const { getTopics } = require("./controllers/topics.controller");
-const { getArticleById } = require("./controllers/articles.controller");
+const {
+  getArticleById,
+  patchArticleById,
+} = require("./controllers/articles.controller");
 const { getUsers } = require("./controllers/users.controller");
 
 app.use(express.json());
@@ -9,6 +12,8 @@ app.use(express.json());
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/users", getUsers);
+
+app.patch("/api/articles/:article_id", patchArticleById);
 
 //404 for end points not found
 app.all("*", (req, res) => {
