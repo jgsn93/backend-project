@@ -38,7 +38,6 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        console.log(articles);
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(5);
         // expect(articles).toBeSortedBy("article_id") CANT GET THIS TO WORK. TRIED TO CHANGE JEST SCRIPT BUT MESSED OTHER THINGS UP;
@@ -55,6 +54,38 @@ describe("GET /api/articles", () => {
             })
           );
         });
+      });
+  });
+  test("200: returns an object with an array with correctly formatted objects filtered by topic sorted by article ID in ascending order", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(4);
+        // expect(articles).toBeSortedBy("article_id") CANT GET THIS TO WORK. TRIED TO CHANGE JEST SCRIPT BUT MESSED OTHER THINGS UP;
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("404: returns an error if a request query returns an empty response object", () => {
+    return request(app)
+      .get("/api/articles?topic=durian")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("Article not found");
       });
   });
 });

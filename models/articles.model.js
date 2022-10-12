@@ -1,18 +1,37 @@
 const db = require("../db/connection");
 
-exports.fetchArticles = () => {
-  return db
-    .query(
-      `SELECT articles.*, CAST (COUNT(comment_id) AS INT) AS comment_count 
+exports.fetchArticles = (topic) => {
+  if (topic) {
+    return db
+      .query(
+        `SELECT articles.*, CAST (COUNT(comment_id) AS INT) AS comment_count 
+      FROM articles 
+      JOIN comments ON articles.article_id = comments.article_id WHERE topic = $1 GROUP BY articles.article_id ORDER BY article_id ASC;`,
+        [topic]
+      )
+      .then((data) => {
+        if (!data.rows.length) {
+          return Promise.reject({ status: 404, message: "Article not found" });
+        }
+        data.rows.forEach((index) => {
+          delete index.body; //Ticket send to remove this?
+        });
+        return data.rows;
+      });
+  } else {
+    return db
+      .query(
+        `SELECT articles.*, CAST (COUNT(comment_id) AS INT) AS comment_count 
       FROM articles 
       JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY article_id ASC;`
-    )
-    .then((data) => {
-      data.rows.forEach((index) => {
-        delete index.body; //Ticket send to remove this?
+      )
+      .then((data) => {
+        data.rows.forEach((index) => {
+          delete index.body; //Ticket send to remove this?
+        });
+        return data.rows;
       });
-      return data.rows;
-    });
+  }
 };
 
 exports.fetchArticlesById = (article_id) => {
