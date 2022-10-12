@@ -40,7 +40,7 @@ describe("GET /api/articles", () => {
         const { articles } = body;
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(5);
-        // expect(articles).toBeSortedBy("article_id") CANT GET THIS TO WORK. TRIED TO CHANGE JEST SCRIPT BUT MESSED OTHER THINGS UP;
+        expect(articles[0].article_id).toBe(1);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
@@ -64,7 +64,7 @@ describe("GET /api/articles", () => {
         const { articles } = body;
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
-        // expect(articles).toBeSortedBy("article_id") CANT GET THIS TO WORK. TRIED TO CHANGE JEST SCRIPT BUT MESSED OTHER THINGS UP;
+        expect(articles[0].article_id).toBe(1);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
