@@ -80,12 +80,12 @@ describe("GET /api/articles", () => {
         });
       });
   });
-  test("404: returns an error if a request query returns an empty response object", () => {
+  test("404: returns an error if a request query is for a topic that does not exist", () => {
     return request(app)
       .get("/api/articles?topic=durian")
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("Article not found");
+        expect(body.message).toBe("Topic not found");
       });
   });
 });
