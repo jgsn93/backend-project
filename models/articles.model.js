@@ -1,5 +1,43 @@
 const db = require("../db/connection");
 
+exports.fetchArticles = (topic) => {
+  if (topic) {
+    return db
+      .query(
+        `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
+      FROM articles 
+      JOIN comments ON articles.article_id = comments.article_id WHERE topic = $1 GROUP BY articles.article_id ORDER BY article_id ASC;`,
+        [topic]
+      )
+      .then((data) => {
+        return db
+          .query(`SELECT EXISTS (SELECT 1 FROM articles WHERE topic = $1)`, [
+            topic,
+          ])
+          .then((response) => {
+            if (response.rows[0].exists === true) {
+              return data.rows;
+            } else {
+              return Promise.reject({
+                status: 404,
+                message: "Topic not found",
+              });
+            }
+          });
+      });
+  } else {
+    return db
+      .query(
+        `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
+      FROM articles 
+      JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY article_id ASC;`
+      )
+      .then((data) => {
+        return data.rows;
+      });
+  }
+};
+
 exports.fetchArticlesById = (article_id) => {
   return db
     .query(

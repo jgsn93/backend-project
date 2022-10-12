@@ -31,31 +31,64 @@ describe("GET /api/topics", () => {
   });
 });
 
-// describe("GET /api/articles", () => {
-//   test("200: returns an object with an array with correctly formatted objects", () => {
-//     return request(app)
-//       .get("/api/articles")
-//       .expect(200)
-//       .then(({ body }) => {
-//         const { articles } = body;
-//         expect(articles).toBeInstanceOf(Array);
-//         expect(articles).toHaveLength(12);
-//         articles.forEach((article) => {
-//           expect(article).toEqual(
-//             expect.objectContaining({
-//               author: expect.any(String),
-//               title: expect.any(String),
-//               article_id: expect.any(Number),
-//               topic: expect.any(String),
-//               created_at: expect.any(String),
-//               vote: expect.any(Number),
-//               comment_count: expect.any(Number),
-//             })
-//           );
-//         });
-//       });
-//   });
-// });
+describe("GET /api/articles", () => {
+  test("200: returns an object with an array with correctly formatted objects sorted by article ID in ascending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(5);
+        expect(articles[0].article_id).toBe(1);
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("200: returns an object with an array with correctly formatted objects filtered by topic sorted by article ID in ascending order", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(4);
+        expect(articles[0].article_id).toBe(1);
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("404: returns an error if a request query is for a topic that does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic=durian")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("Topic not found");
+      });
+  });
+});
 
 describe("GET /api/articles/:article_id", () => {
   test("200: return an article object with the correct properties", () => {
@@ -82,7 +115,6 @@ describe("GET /api/articles/:article_id", () => {
       .get(`/api/articles/9000`)
       .expect(404)
       .then(({ body }) => {
-        console.log(body);
         expect(body.message).toBe("Article not found");
       });
   });
@@ -147,7 +179,7 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(patchedObj)
       .expect(400)
       .then(({ body }) => {
-        expect(body.message).toBe("Invalid input");
+        expect(body.message).toBe("Must have an inc_votes key");
       });
   });
   test("400: returns an error if the patch request has an invalid id type ", () => {
