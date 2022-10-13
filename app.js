@@ -6,6 +6,7 @@ const {
   getArticleById,
   getCommentsByArticleId,
   patchArticleById,
+  postCommentByArticleId,
 } = require("./controllers/articles.controller");
 const { getUsers } = require("./controllers/users.controller");
 
@@ -19,6 +20,8 @@ app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
 app.patch("/api/articles/:article_id", patchArticleById);
 
+app.post("/api/articles/:article_id/comments", postCommentByArticleId);
+
 app.get("/api/users", getUsers);
 
 //404 for end points not found
@@ -30,7 +33,13 @@ app.all("*", (req, res) => {
 app.use((err, req, res, next) => {
   if (err.code === "22P02") {
     res.status(400).send({ message: "Invalid input" });
-  } else next(err);
+  } else if (err.code === "23503") {
+    res.status(404).send({ message: "Username not found" });
+  } else if (err.code === "23502") {
+    res.status(400).send({ message: "Bad request" });
+  } else {
+    next(err);
+  }
 });
 
 //Handle custom errors
