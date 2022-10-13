@@ -217,7 +217,7 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
-describe("POST /api/articles/:article_id/comments", () => {
+describe.only("POST /api/articles/:article_id/comments", () => {
   test("201: accepts a valid object and responds with the posted comment", () => {
     const postedObj = {
       username: "butter_bridge",
@@ -240,6 +240,56 @@ describe("POST /api/articles/:article_id/comments", () => {
         });
       });
   });
+  test("201: accepts object as long as it has a username and body properties, ignoring other properties", () => {
+    const postedObj = {
+      username: "butter_bridge",
+      body: "this api is coming along pretty sweet",
+      random: "just ignore me",
+    };
+
+    return request(app)
+      .post("/api/articles/9/comments")
+      .send(postedObj)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toEqual({
+          comment_id: 19,
+          body: "this api is coming along pretty sweet",
+          article_id: 9,
+          author: "butter_bridge",
+          created_at: expect.any(String),
+          votes: 0,
+        });
+      });
+  });
+  test("400: returns an error if object is missing either a body or username", () => {
+    const postedObj = {
+      body: "this api is coming along pretty sweet",
+    };
+
+    return request(app)
+      .post("/api/articles/9/comments")
+      .send(postedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Bad request");
+      });
+  });
+  test("400: returns an error if the id is an invalid type", () => {
+    const postedObj = {
+      username: "butter_bridge",
+      body: "git pull requests make me cry a bit",
+    };
+
+    return request(app)
+      .post("/api/articles/hellothere/comments")
+      .send(postedObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
   test("404: returns an error if the username is not stored in users", () => {
     const postedObj = {
       username: "intruder",
@@ -254,17 +304,18 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(body.message).toBe("Username not found");
       });
   });
-  test("400: returns an error if object is missing either a body or username", () => {
+  test("404: returns an error if the id is valid type but does not exist", () => {
     const postedObj = {
+      username: "intruder",
       body: "this api is coming along pretty sweet",
     };
 
     return request(app)
-      .post("/api/articles/9/comments")
+      .post("/api/articles/9000/comments")
       .send(postedObj)
-      .expect(400)
+      .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("Invalid input");
+        expect(body.message).toBe("Username not found");
       });
   });
 });

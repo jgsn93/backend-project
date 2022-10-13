@@ -84,10 +84,6 @@ exports.createCommentByArticleId = (article_id, postComment) => {
       [article_id, body, username]
     )
     .then((result) => {
-      if (!result.rows.length) {
-        return Promise.reject();
-      } else {
-        return result.rows[0];
-      }
+      return result.rows[0];
     });
 };
