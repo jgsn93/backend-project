@@ -151,6 +151,17 @@ describe("GET /api/articles/:article_id/comments", () => {
         });
       });
   });
+  test("200: returns an empty array if article ID is valid but has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeInstanceOf(Array);
+        expect(comments).toHaveLength(0);
+      });
+  });
+
   test("404: returns an err if no articles found by specific id", () => {
     return request(app)
       .get("/api/articles/100/comments")
@@ -258,7 +269,7 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
-describe.only("POST /api/articles/:article_id/comments", () => {
+describe("POST /api/articles/:article_id/comments", () => {
   test("201: accepts a valid object and responds with the posted comment", () => {
     const postedObj = {
       username: "butter_bridge",

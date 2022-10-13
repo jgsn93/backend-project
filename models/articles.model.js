@@ -89,29 +89,23 @@ exports.createCommentByArticleId = (article_id, postComment) => {
 };
 
 exports.fetchCommentsByArticleId = (article_id) => {
-  return db
-    .query(
-      `SELECT comment_id, votes, created_at, author, body 
-    FROM comments
-    WHERE article_id = $1 ORDER BY created_at DESC;`,
-      [article_id]
-    )
-    .then((comments) => {
-      if (comments.rows.length !== 0) {
-        return comments.rows;
-      } else {
-        return db
-          .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
-          .then((response) => {
-            if (response.rows.length !== 0) {
-              return comments.rows;
-            } else {
-              return Promise.reject({
-                status: 404,
-                message: "No articles found with this ID",
-              });
-            }
-          });
-      }
-    });
+  const query1 = db.query(
+    `SELECT comment_id, votes, created_at, author, body FROM comments WHERE article_id = $1 ORDER BY created_at DESC;`,
+    [article_id]
+  );
+
+  const query2 = db.query(`SELECT * FROM articles WHERE article_id = $1`, [
+    article_id,
+  ]);
+
+  return Promise.all([query1, query2]).then((response) => {
+    if (response[0].rows.length !== 0 || response[1].rows.length !== 0) {
+      return response[0].rows;
+    } else {
+      return Promise.reject({
+        status: 404,
+        message: "No articles found with this ID",
+      });
+    }
+  });
 };
