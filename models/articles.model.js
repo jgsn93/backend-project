@@ -72,3 +72,18 @@ exports.updateArticleById = (inc_votes, article_id) => {
       }
     });
 };
+
+exports.createCommentByArticleId = (article_id, postComment) => {
+  const { username, body } = postComment;
+
+  return db
+    .query(
+      `INSERT into comments (article_id, body, author)
+      VALUES ($1, $2, $3)
+      RETURNING *;`,
+      [article_id, body, username]
+    )
+    .then((result) => {
+      return result.rows[0];
+    });
+};
