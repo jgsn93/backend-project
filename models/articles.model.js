@@ -82,19 +82,21 @@ exports.fetchCommentsByArticleId = (article_id) => {
       [article_id]
     )
     .then((comments) => {
-      return db
-        .query(`SELECT EXISTS (SELECT 1 FROM comments WHERE article_id = $1)`, [
-          article_id,
-        ])
-        .then((response) => {
-          if (response.rows[0].exists === true) {
-            return comments.rows;
-          } else {
-            return Promise.reject({
-              status: 404,
-              message: "No articles found with this ID",
-            });
-          }
-        });
+      if (comments.rows.length !== 0) {
+        return comments.rows;
+      } else {
+        return db
+          .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
+          .then((response) => {
+            if (response.rows.length !== 0) {
+              return comments.rows;
+            } else {
+              return Promise.reject({
+                status: 404,
+                message: "No articles found with this ID",
+              });
+            }
+          });
+      }
     });
 };
