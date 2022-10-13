@@ -10,7 +10,7 @@ afterAll(() => {
   db.end();
 });
 
-describe.only("GET /api/topics", () => {
+describe("GET /api/topics", () => {
   test("200: returns an object with an array with correctly formatted objects", () => {
     return request(app)
       .get("/api/topics")
@@ -32,15 +32,16 @@ describe.only("GET /api/topics", () => {
 });
 
 describe("GET /api/articles", () => {
-  test("200: returns an object with an array with correctly formatted objects sorted by article ID in ascending order", () => {
+  test("200: returns an object with an array with correctly formatted objects sorted by most recent article in descending order by default", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+        console.log(articles);
+        expect(articles[0].created_at).toBe("2020-11-03T09:12:00.000Z");
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(5);
-        expect(articles[0].article_id).toBe(1);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
@@ -56,16 +57,15 @@ describe("GET /api/articles", () => {
         });
       });
   });
-  test("200: returns an object with an array with correctly formatted objects filtered by topic sorted by article ID in ascending order", () => {
+  test("200: returns an object with an array with correctly formatted objects filtered by topic sorted by created at in descending order by default", () => {
     return request(app)
       .get("/api/articles?topic=mitch")
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        console.log(articles);
+        expect(articles[0].created_at).toBe("2020-11-03T09:12:00.000Z");
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
-        expect(articles[0].article_id).toBe(1);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
@@ -81,6 +81,42 @@ describe("GET /api/articles", () => {
         });
       });
   });
+
+  test("200: returns an object with an array with correctly formatted objects sorted any column in the table and either ascending or descending", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=title&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        console.log(body);
+        const { articles } = body;
+        expect(articles[0].title).toBe("A");
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(4);
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+
+  test("400: returns an error if sort by or order queries are not valid", () => {
+    return request(app)
+      .get("/api/articles?sort_by=durian")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid query");
+      });
+  });
+
   test("404: returns an error if a request query is for a topic that does not exist", () => {
     return request(app)
       .get("/api/articles?topic=durian")

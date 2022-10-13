@@ -3,7 +3,7 @@ const db = require("../db/connection");
 exports.fetchArticles = (
   topic,
   sort_by = "articles.created_at",
-  order = "DESC"
+  order = "desc"
 ) => {
   //Query strings
   let mainQuery = `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
@@ -14,7 +14,29 @@ exports.fetchArticles = (
   const groupByQuery = ` GROUP BY articles.article_id`;
   const orderSortByQuery = ` ORDER BY ${sort_by} ${order}`;
 
-  console.log(`${mainQuery}${topicQuery}${groupByQuery}${orderSortByQuery};`);
+  const validQueries = [
+    "articles.author",
+    "title",
+    "article.article_id",
+    "topic",
+    "articles.created_at",
+    "articles.votes",
+    "comment_count",
+    "asc",
+    "desc",
+  ];
+
+  if (!validQueries.includes(sort_by) || !validQueries.includes(order)) {
+    return Promise.reject({ status: 400, message: "Invalid query" });
+  }
+
+  if (!topic) {
+    return db
+      .query(`${mainQuery} ${groupByQuery} ${orderSortByQuery};`)
+      .then((response) => {
+        return response.rows;
+      });
+  }
 
   if (topic) {
     return db
@@ -23,23 +45,22 @@ exports.fetchArticles = (
         [topic]
       )
       .then((data) => {
-        return db
-          .query(`SELECT EXISTS (SELECT 1 FROM articles WHERE topic = $1)`, [
-            topic,
-          ])
-          .then((response) => {
-            if (response.rows[0].exists === true) {
-              return data.rows;
-            } else {
-              return Promise.reject({
-                status: 404,
-                message: "Topic not found",
-              });
-            }
-          });
-      })
-      .catch((err) => {
-        console.log(err);
+        if (data.rows.length !== 0) {
+          return data.rows;
+        } else {
+          return db
+            .query(`SELECT * FROM articles WHERE topic = $1;`, [topic])
+            .then((response) => {
+              if (response.rows.length !== 0) {
+                return data.rows;
+              } else {
+                return Promise.reject({
+                  status: 404,
+                  message: "Topic not found",
+                });
+              }
+            });
+        }
       });
   }
 };
