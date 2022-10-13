@@ -81,13 +81,20 @@ exports.fetchCommentsByArticleId = (article_id) => {
     WHERE article_id = $1 ORDER BY created_at DESC;`,
       [article_id]
     )
-    .then((articles) => {
-      if (!articles.rows.length) {
-        return Promise.reject({
-          status: 404,
-          message: "No articles found with this ID",
+    .then((comments) => {
+      return db
+        .query(`SELECT EXISTS (SELECT 1 FROM comments WHERE article_id = $1)`, [
+          article_id,
+        ])
+        .then((response) => {
+          if (response.rows[0].exists === true) {
+            return comments.rows;
+          } else {
+            return Promise.reject({
+              status: 404,
+              message: "No articles found with this ID",
+            });
+          }
         });
-      }
-      return articles.rows;
     });
 };
