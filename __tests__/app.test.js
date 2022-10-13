@@ -10,7 +10,7 @@ afterAll(() => {
   db.end();
 });
 
-describe("GET /api/topics", () => {
+describe.only("GET /api/topics", () => {
   test("200: returns an object with an array with correctly formatted objects", () => {
     return request(app)
       .get("/api/topics")
@@ -62,6 +62,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+        console.log(articles);
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
         expect(articles[0].article_id).toBe(1);

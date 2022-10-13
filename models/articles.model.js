@@ -1,12 +1,25 @@
 const db = require("../db/connection");
 
-exports.fetchArticles = (topic) => {
+exports.fetchArticles = (
+  topic,
+  sort_by = "articles.created_at",
+  order = "DESC"
+) => {
+  //Query strings
+  let mainQuery = `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
+  FROM articles 
+  JOIN comments ON articles.article_id = comments.article_id`;
+
+  const topicQuery = ` WHERE topic = $1`;
+  const groupByQuery = ` GROUP BY articles.article_id`;
+  const orderSortByQuery = ` ORDER BY ${sort_by} ${order}`;
+
+  console.log(`${mainQuery}${topicQuery}${groupByQuery}${orderSortByQuery};`);
+
   if (topic) {
     return db
       .query(
-        `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
-      FROM articles 
-      JOIN comments ON articles.article_id = comments.article_id WHERE topic = $1 GROUP BY articles.article_id ORDER BY article_id ASC;`,
+        `${mainQuery} ${topicQuery} ${groupByQuery} ${orderSortByQuery};`,
         [topic]
       )
       .then((data) => {
@@ -24,16 +37,9 @@ exports.fetchArticles = (topic) => {
               });
             }
           });
-      });
-  } else {
-    return db
-      .query(
-        `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
-      FROM articles 
-      JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY article_id ASC;`
-      )
-      .then((data) => {
-        return data.rows;
+      })
+      .catch((err) => {
+        console.log(err);
       });
   }
 };
