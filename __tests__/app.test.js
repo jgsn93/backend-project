@@ -32,15 +32,15 @@ describe("GET /api/topics", () => {
 });
 
 describe("GET /api/articles", () => {
-  test("200: returns an object with an array with correctly formatted objects sorted by article ID in ascending order", () => {
+  test("200: returns an object with an array with correctly formatted objects sorted by most recent article in descending order by default", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+        expect(articles).toBeSortedBy(articles.created_at);
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(5);
-        expect(articles[0].article_id).toBe(1);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
@@ -56,15 +56,15 @@ describe("GET /api/articles", () => {
         });
       });
   });
-  test("200: returns an object with an array with correctly formatted objects filtered by topic sorted by article ID in ascending order", () => {
+  test("200: returns an object with an array with correctly formatted objects filtered by topic sorted by created at in descending order by default", () => {
     return request(app)
       .get("/api/articles?topic=mitch")
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+        expect(articles).toBeSortedBy(articles.created_at);
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
-        expect(articles[0].article_id).toBe(1);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
@@ -78,6 +78,46 @@ describe("GET /api/articles", () => {
             })
           );
         });
+      });
+  });
+  test("200: returns an object with an array with correctly formatted objects sorted by any column in the table", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(4);
+        expect(articles).toBeSortedBy(articles.votes);
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("400: returns an error if sort by queries are not valid", () => {
+    return request(app)
+      .get("/api/articles?sort_by=durian")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid query");
+      });
+  });
+  test("400: returns an error if order queries are not valid", () => {
+    return request(app)
+      .get("/api/articles?order=topic")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid query");
       });
   });
   test("404: returns an error if a request query is for a topic that does not exist", () => {
@@ -109,7 +149,6 @@ describe("GET /api/articles/:article_id", () => {
         });
       });
   });
-
   test("404: returns an error if ID does not exist but correct input type", () => {
     return request(app)
       .get(`/api/articles/9000`)

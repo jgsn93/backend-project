@@ -1,40 +1,63 @@
 const db = require("../db/connection");
 
-exports.fetchArticles = (topic) => {
+exports.fetchArticles = (topic, sort_by = "created_at", order = "desc") => {
+  let mainQuery = `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
+  FROM articles 
+  JOIN comments ON articles.article_id = comments.article_id`;
+
+  const topicQuery = ` WHERE topic = $1`;
+  const groupByQuery = ` GROUP BY articles.article_id`;
+  const orderSortByQuery = ` ORDER BY ${sort_by} ${order}`;
+
+  const validSortQueries = [
+    "author",
+    "title",
+    "article_id",
+    "topic",
+    "created_at",
+    "votes",
+    "comment_count",
+  ];
+
+  const validOrderQueries = ["asc", "desc"];
+
+  if (
+    !validSortQueries.includes(sort_by) ||
+    !validOrderQueries.includes(order)
+  ) {
+    return Promise.reject({ status: 400, message: "Invalid query" });
+  }
+
+  if (!topic) {
+    return db
+      .query(`${mainQuery} ${groupByQuery} ${orderSortByQuery};`)
+      .then((response) => {
+        return response.rows;
+      });
+  }
+
   if (topic) {
-    return db
-      .query(
-        `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
-      FROM articles 
-      JOIN comments ON articles.article_id = comments.article_id WHERE topic = $1 GROUP BY articles.article_id ORDER BY article_id ASC;`,
-        [topic]
-      )
-      .then((data) => {
-        return db
-          .query(`SELECT EXISTS (SELECT 1 FROM articles WHERE topic = $1)`, [
-            topic,
-          ])
-          .then((response) => {
-            if (response.rows[0].exists === true) {
-              return data.rows;
-            } else {
-              return Promise.reject({
-                status: 404,
-                message: "Topic not found",
-              });
-            }
-          });
-      });
-  } else {
-    return db
-      .query(
-        `SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, CAST (COUNT(comment_id) AS INT) AS comment_count 
-      FROM articles 
-      JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY article_id ASC;`
-      )
-      .then((data) => {
-        return data.rows;
-      });
+    const query1 = db.query(
+      `${mainQuery} ${topicQuery} ${groupByQuery} ${orderSortByQuery};`,
+      [topic]
+    );
+    const query2 = db.query(`SELECT * FROM articles WHERE topic = $1;`, [
+      topic,
+    ]);
+
+    return Promise.all([query1, query2]).then((response) => {
+      const articlesByTopic = response[0].rows;
+      const doesTopicExist = response[1].rows;
+
+      if (articlesByTopic.length !== 0 || doesTopicExist.length !== 0) {
+        return articlesByTopic;
+      } else {
+        return Promise.reject({
+          status: 404,
+          message: "Topic not found",
+        });
+      }
+    });
   }
 };
 
