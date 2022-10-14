@@ -128,6 +128,58 @@ describe("GET /api/articles/:article_id", () => {
   });
 });
 
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: returns an array of comment objects with the correct properties", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeInstanceOf(Array);
+        expect(comments).toHaveLength(11);
+        expect(comments[0].created_at).toBe("2020-11-03T21:00:00.000Z");
+        comments.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              body: expect.any(String),
+              comment_id: expect.any(Number),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("200: returns an empty array if article ID is valid but has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeInstanceOf(Array);
+        expect(comments).toHaveLength(0);
+      });
+  });
+
+  test("404: returns an err if no articles found by specific id", () => {
+    return request(app)
+      .get("/api/articles/100/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("No articles found with this ID");
+      });
+  });
+  test("400: returns an error if not a valid input type", () => {
+    return request(app)
+      .get(`/api/articles/durian/comments`)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
+});
+
 describe("GET /api/users", () => {
   test("200: returns an object with an array with correctly formatted objects", () => {
     return request(app)
@@ -217,7 +269,7 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
-describe.only("POST /api/articles/:article_id/comments", () => {
+describe("POST /api/articles/:article_id/comments", () => {
   test("201: accepts a valid object and responds with the posted comment", () => {
     const postedObj = {
       username: "butter_bridge",
