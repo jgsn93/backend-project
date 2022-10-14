@@ -2,7 +2,7 @@
 
 ## Background and Description
 
-This is the first project I have completed since being at Northcoders, building an API for the purpose of accessing data programatically stored within a PSQL database. This is to mimic the building of a real world backend service which will be built upon in my next project with front end architecture.
+This is the first project I have completed since being at Northcoders, building an API for the purpose of accessing data programatically stored within an PSQL database. This is to mimic the building of a real world backend service which will be built upon in my next project with front end architecture.
 
 This server can be used to obtain `articles`, `comments`, `users`, and `topics`, as well as tools for `adding`, `deleting`, and `updating` information about them in various ways.
 
