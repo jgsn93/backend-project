@@ -9,6 +9,7 @@ const {
   postCommentByArticleId,
 } = require("./controllers/articles.controller");
 const { getUsers } = require("./controllers/users.controller");
+const { getEndpoints } = require("./controllers/endpoints.controller");
 
 app.use(express.json());
 
@@ -23,6 +24,8 @@ app.patch("/api/articles/:article_id", patchArticleById);
 app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 
 app.get("/api/users", getUsers);
+
+app.get("/api/", getEndpoints);
 
 //404 for end points not found
 app.all("*", (req, res) => {
