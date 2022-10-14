@@ -98,5 +98,10 @@
       "username": "super_hans",
       "body": "big beats are the best"
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "serves an empty object upon successful deletion of a comment by given id",
+    "acceptedParameterDataType": "number",
+    "exampleResponse": {}
   }
 }
