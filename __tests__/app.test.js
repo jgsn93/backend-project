@@ -411,6 +411,35 @@ describe("POST /api/articles/:article_id/comments", () => {
   });
 });
 
+describe.only("DELETE /api/comments/:comment_id", () => {
+  test("204: responds with status code indicating success and an empty object", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+      .then(({ body }) => {
+        expect(typeof body).toBe("object");
+        expect(Array.isArray(body)).toBeFalsy();
+      });
+  });
+  test("204: responds with status code indicating success and an empty object even if ID is not in the database but is valid data type", () => {
+    return request(app)
+      .delete("/api/comments/9999")
+      .expect(204)
+      .then(({ body }) => {
+        expect(typeof body).toBe("object");
+        expect(Array.isArray(body)).toBeFalsy();
+      });
+  });
+  test("400: responds with error if ID is invalid data type", () => {
+    return request(app)
+      .delete("/api/comments/durian")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid input");
+      });
+  });
+});
+
 describe("404 for invalid end points", () => {
   test("404: returns status 404 and error message for an invalid end point", () => {
     return request(app)

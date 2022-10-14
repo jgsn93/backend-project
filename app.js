@@ -8,6 +8,7 @@ const {
   patchArticleById,
   postCommentByArticleId,
 } = require("./controllers/articles.controller");
+const { deleteCommentById } = require("./controllers/comments.controller");
 const { getUsers } = require("./controllers/users.controller");
 
 app.use(express.json());
@@ -23,6 +24,8 @@ app.patch("/api/articles/:article_id", patchArticleById);
 app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 
 app.get("/api/users", getUsers);
+
+app.delete("/api/comments/:comment_id", deleteCommentById);
 
 //404 for end points not found
 app.all("*", (req, res) => {
