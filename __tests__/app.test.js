@@ -38,8 +38,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        console.log(articles);
-        expect(articles[0].created_at).toBe("2020-11-03T09:12:00.000Z");
+        expect(articles).toBeSortedBy(articles.created_at);
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(5);
         articles.forEach((article) => {
@@ -63,7 +62,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        expect(articles[0].created_at).toBe("2020-11-03T09:12:00.000Z");
+        expect(articles).toBeSortedBy(articles.created_at);
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
         articles.forEach((article) => {
@@ -81,15 +80,12 @@ describe("GET /api/articles", () => {
         });
       });
   });
-
-  test("200: returns an object with an array with correctly formatted objects sorted any column in the table and either ascending or descending", () => {
+  test("200: returns an object with an array with correctly formatted objects sorted by any column in the table", () => {
     return request(app)
-      .get("/api/articles?topic=mitch&sort_by=title&order=asc")
+      .get("/api/articles?topic=mitch&sort_by=votes")
       .expect(200)
       .then(({ body }) => {
-        console.log(body);
         const { articles } = body;
-        expect(articles[0].title).toBe("A");
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
         articles.forEach((article) => {
@@ -107,8 +103,7 @@ describe("GET /api/articles", () => {
         });
       });
   });
-
-  test("400: returns an error if sort by or order queries are not valid", () => {
+  test("400: returns an error if sort by queries are not valid", () => {
     return request(app)
       .get("/api/articles?sort_by=durian")
       .expect(400)
@@ -116,7 +111,14 @@ describe("GET /api/articles", () => {
         expect(body.message).toBe("Invalid query");
       });
   });
-
+  test("400: returns an error if order queries are not valid", () => {
+    return request(app)
+      .get("/api/articles?order=topic")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid query");
+      });
+  });
   test("404: returns an error if a request query is for a topic that does not exist", () => {
     return request(app)
       .get("/api/articles?topic=durian")
@@ -146,7 +148,6 @@ describe("GET /api/articles/:article_id", () => {
         });
       });
   });
-
   test("404: returns an error if ID does not exist but correct input type", () => {
     return request(app)
       .get(`/api/articles/9000`)
