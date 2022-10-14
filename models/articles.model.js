@@ -46,8 +46,11 @@ exports.fetchArticles = (topic, sort_by = "created_at", order = "desc") => {
     ]);
 
     return Promise.all([query1, query2]).then((response) => {
-      if (response[0].rows.length !== 0 || response[1].rows.length !== 0) {
-        return response[0].rows;
+      const articlesByTopic = response[0].rows;
+      const doesTopicExist = response[1].rows;
+
+      if (articlesByTopic.length !== 0 || doesTopicExist.length !== 0) {
+        return articlesByTopic;
       } else {
         return Promise.reject({
           status: 404,

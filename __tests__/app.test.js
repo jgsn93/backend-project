@@ -88,6 +88,7 @@ describe("GET /api/articles", () => {
         const { articles } = body;
         expect(articles).toBeInstanceOf(Array);
         expect(articles).toHaveLength(4);
+        expect(articles).toBeSortedBy(articles.votes);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
